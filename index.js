@@ -14,8 +14,8 @@ const TYPE_ALERTS = "alerts";
 
 const endpointMap = {
     [TYPE_TRIP_UPDATES]: process.env.TRIP_UPDATE_URL,
-    [TYPE_VEHICLE_POSITIONS]: process.env.TRIP_UPDATE_URL,
-    [TYPE_ALERTS]: process.env.TRIP_UPDATE_URL,
+    [TYPE_VEHICLE_POSITIONS]: process.env.VEHICLE_POSITIONS_URL,
+    [TYPE_ALERTS]: process.env.ALERTS_URL,
 };
 
 const tableMap = {
