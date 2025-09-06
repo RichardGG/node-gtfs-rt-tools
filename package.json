@@ -1,0 +1,30 @@
+{
+  "name": "gtfs-rt-tools",
+  "version": "1.0.0",
+  "description": "Tools to read/store/analyse gtfs realtime data",
+  "homepage": "https://github.com/RichardGG/node-gtfs-rt-tools#readme",
+  "bugs": {
+    "url": "https://github.com/RichardGG/node-gtfs-rt-tools/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RichardGG/node-gtfs-rt-tools.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "migrate": "ley",
+    "fetch": "node index.js save-fetch"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.2",
+    "gtfs-realtime-bindings": "^1.1.1",
+    "node-fetch": "^3.3.2",
+    "postgres": "^3.4.7"
+  },
+  "devDependencies": {
+    "ley": "^0.8.1"
+  }
+}
