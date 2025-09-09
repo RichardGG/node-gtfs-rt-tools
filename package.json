@@ -19,6 +19,7 @@
     "fetch": "node index.js save-fetch"
   },
   "dependencies": {
+    "csv-parse": "^6.1.0",
     "dotenv": "^17.2.2",
     "gtfs-realtime-bindings": "^1.1.1",
     "node-fetch": "^3.3.2",

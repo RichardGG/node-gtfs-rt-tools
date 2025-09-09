@@ -5,7 +5,6 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 const args = process.argv.slice(2);
-
 const sql = postgres({});
 
 const TYPE_TRIP_UPDATES = "trip-updates";
