@@ -28,3 +28,18 @@ const fetchGTFS = async () => {
     const buffer = await res.arrayBuffer();
     return Buffer.from(buffer);
 };
+
+
+// QUERY FOR AVERGE DELAY PER STOP PER DAY
+SELECT start_date, trip_id, stop_id, stop_sequence, avg(arrival_delay_seconds), avg(departure_delay_seconds) FROM agg_trip_stop_delays
+GROUP BY start_date, trip_id, stop_id, stop_sequence
+LIMIT 100;
+
+
+// QUERY FOR AVERAGE DELAY PER STOP PER DAY WITH ROUTE IDS
+SELECT trips.entity->'route_id', avg_arr_delay, avg_dep_delay FROM trips
+INNER JOIN (
+	SELECT start_date, trip_id, stop_id, stop_sequence, (avg(arrival_delay_seconds) / 60)::NUMERIC(10,2) as avg_arr_delay, (avg(departure_delay_seconds) / 60)::NUMERIC(10,2) as avg_dep_delay FROM agg_trip_stop_delays
+	GROUP BY start_date, trip_id, stop_id, stop_sequence
+) as averages
+ON averages.trip_id = trips.entity->>'trip_id';

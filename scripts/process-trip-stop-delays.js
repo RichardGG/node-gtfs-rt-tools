@@ -15,12 +15,12 @@ const markAsProcessed = async (id) => {
 const processBatch = async () => {
     const fetchResult = await sql`
         SELECT * FROM trip_updates
-        WHERE last_processed_at IS NULL
+        WHERE last_processed_at < '2025-09-18 00:00:00+00' OR last_processed_at IS NULL
         ORDER BY id
-        LIMIT 100
+        LIMIT 1000
     `;
     for (const row of fetchResult) {
-        const tripUpdate = row.entity;
+        const tripUpdate = row.entity.tripUpdate;
         // Find the next stop time update (lowest stop_sequence)
         const nextStopTimeUpdate = tripUpdate.stopTimeUpdate.reduce((prev, curr) => {
             if (!prev) return curr;
@@ -36,6 +36,10 @@ const processBatch = async () => {
             AND stop_sequence = ${nextStopTimeUpdate.stopSequence}
         `;
 
+        const timestamp = tripUpdate.timestamp && new Date(tripUpdate.timestamp * 1000);
+        const arrivalTime = nextStopTimeUpdate.arrival?.time && new Date(nextStopTimeUpdate.arrival.time * 1000);
+        const departureTime = nextStopTimeUpdate.departure?.time && new Date(nextStopTimeUpdate.departure.time * 1000);
+
         if (delays.length === 0) {
             await sql`
                 INSERT INTO agg_trip_stop_delays (
@@ -47,17 +51,19 @@ const processBatch = async () => {
                     stop_sequence,
                     estimated_arrival,
                     estimated_departure,
-                    delay_seconds,
+                    arrival_delay_seconds,
+                    departure_delay_seconds
                 ) VALUES (
-                    ${row.id},
-                    ${tripUpdate.timestamp},
-                    ${tripUpdate.trip.tripId},
-                    ${tripUpdate.trip.startDate},
-                    ${nextStopTimeUpdate.stopId},
-                    ${nextStopTimeUpdate.stopSequence},
-                    ${nextStopTimeUpdate.arrival.time},
-                    ${nextStopTimeUpdate.departure.time},
-                    ${nextStopTimeUpdate.arrival.delay},
+                    ${row.id ?? null},
+                    ${timestamp ?? null},
+                    ${tripUpdate.trip.tripId ?? null},
+                    ${tripUpdate.trip.startDate ?? null},
+                    ${nextStopTimeUpdate.stopId ?? null},
+                    ${nextStopTimeUpdate.stopSequence ?? null},
+                    ${arrivalTime ?? null},
+                    ${departureTime ?? null},
+                    ${nextStopTimeUpdate.arrival?.delay ?? null},
+                    ${nextStopTimeUpdate.departure?.delay ?? null}
                 )
             `;
             await markAsProcessed(row.id);
@@ -74,9 +80,11 @@ const processBatch = async () => {
         await sql`
             UPDATE agg_trip_stop_delays
             SET trip_update_id = ${row.id},
-                estimated_arrival = ${nextStopTimeUpdate.arrival.time},
-                estimated_departure = ${nextStopTimeUpdate.departure.time},
-                delay_seconds = ${nextStopTimeUpdate.arrival.delay},
+                trip_update_timestamp = ${timestamp},
+                estimated_arrival = ${arrivalTime},
+                estimated_departure = ${departureTime},
+                arrival_delay_seconds = ${nextStopTimeUpdate.arrival?.delay},
+                departure_delay_seconds = ${nextStopTimeUpdate.departure?.delay}
         `;
         await markAsProcessed(row.id);
     }

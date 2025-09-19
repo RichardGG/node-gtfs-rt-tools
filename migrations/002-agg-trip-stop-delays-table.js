@@ -8,9 +8,10 @@ export async function up(sql) {
             start_date TEXT NOT NULL,
             stop_id TEXT NOT NULL,
             stop_sequence INTEGER NOT NULL,
-            estimated_arrival TIMESTAMPTZ,
-            estimated_departure TIMESTAMPTZ,
-            delay_seconds INTEGER,
+            estimated_arrival TIMESTAMPTZ NULL,
+            estimated_departure TIMESTAMPTZ NULL,
+            arrival_delay_seconds INTEGER NULL,
+            departure_delay_seconds INTEGER NULL
         );
     `;
 
