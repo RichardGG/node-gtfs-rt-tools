@@ -1,0 +1,16 @@
+{
+    "agencies": [
+        {
+            "agencyKey": "translink-qld",
+            "url": "https://gtfsrt.api.translink.com.au/GTFS/SEQ_GTFS.zip"
+        }
+    ],
+    "bufferSizeMeters": 400,
+    "coordinatePrecision": 5,
+    "outputType": "agency",
+    "outputFormat": "lines-and-stops",
+    "outputPath": "temp_geojson",
+    "overwriteExistingFiles": true,
+    "verbose": true,
+    "zipOutput": false
+}
