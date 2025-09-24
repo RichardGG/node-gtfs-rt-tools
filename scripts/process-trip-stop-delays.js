@@ -20,6 +20,7 @@ const processBatch = async () => {
         LIMIT 1000
     `;
     for (const row of fetchResult) {
+        // TODO consider processing all stops, in case of update delays missing a stop
         const tripUpdate = row.entity.tripUpdate;
         // Find the next stop time update (lowest stop_sequence)
         const nextStopTimeUpdate = tripUpdate.stopTimeUpdate.reduce((prev, curr) => {

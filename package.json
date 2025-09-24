@@ -25,6 +25,7 @@
     "gtfs-realtime-bindings": "^1.1.1",
     "gtfs-to-geojson": "^3.8.3",
     "leaflet": "^1.9.4",
+    "leaflet-polylineoffset": "^1.1.1",
     "node-fetch": "^3.3.2",
     "postgres": "^3.4.7"
   },

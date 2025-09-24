@@ -33,22 +33,16 @@ const addGeoJson = async () => {
     const geojson = await response.json();
     return L.geoJSON(geojson, {
         pointToLayer: function (feature, latlng) {
-            // console.log('feature', feature.properties?.routes?.[0]?.route_color);
             return L.circleMarker(latlng, {
-                radius: 4,
-                // TODO fix color (only fill showing)
-                stroke: true,
+                radius: 3,
                 fillOpacity: 1,
-                opacity: 1,
-                // color: '#f00', // feature.properties?.routes?.[0]?.route_color || '#f00',// '#000', // randomColor(),
-                weight: 2,
                 fillColor: '#fff',
             });
         },
         style: function (feature) {
             return {
-                color: feature.properties?.route_color || feature.properties?.routes?.[0]?.route_color,
-                weight: 2,
+                color: feature.properties?.route_color || '#000',//feature.properties?.routes?.[0]?.route_color,
+                weight: feature.properties?.stop_id ? 2 : 2,
                 opacity: 1,
             };
         },
@@ -63,8 +57,39 @@ const addGeoJson = async () => {
     }).addTo(map);
 }
 
+const colorStops = async () => {
+    const response = await fetch('/temp_json/delays.json');
+    const delays = await response.json();
+    map.eachLayer(function (marker) {
+        if (marker instanceof L.CircleMarker === false) {
+            return;
+        }
+        const stopId = marker.feature?.properties?.stop_id;
+        if (!stopId) {
+            return;
+        }
+        // Find the delay entry for this stop
+        const delayEntry = delays.find(d => d.stop_id === stopId);
+        if (delayEntry) {
+            // Color based on average arrival delay
+            const avgDelay = parseFloat(delayEntry.avg_arr_delay);
+            const max = 30; // 30 minutes
+            let color = '#00ff00';
+            if (avgDelay > 0) {
+                const ratio = Math.min(avgDelay / max, 1);
+                const red = Math.floor(255 * ratio);
+                const green = Math.floor(255 * (1 - ratio));
+                color = `rgb(${red},${green},0)`;
+            }
+            marker.setStyle({ color });
+            marker.bindPopup(`Stop ID: ${stopId}<br>Avg Arrival Delay: ${avgDelay} mins<br>Route ID: ${delayEntry.route_id}`);
+        }
+    });
+}
+
 // addCustomStops();
-addGeoJson();
+await addGeoJson();
+colorStops();
 
 function updateColors(day) {
     console.log('updating colors');
@@ -84,15 +109,13 @@ function updateColors(day) {
 // updateColors('Monday');
 
 map.on('zoom', function() {
-    console.log('zoom level:', map.getZoom() < 13);
-
     map.eachLayer(function (marker) {
         if (marker instanceof L.CircleMarker === false) {
             return;
         }
-        // Hide markers if zoom level is less than 13
+        // Hide markers if zoom level is less than 
         if (marker.setStyle) {
-            if (map.getZoom() < 13) {
+            if (map.getZoom() < 14) {
                 marker.setStyle({ stroke: false, fill: false, });
             } else {
                 marker.setStyle({ stroke: true, fill: true, });
