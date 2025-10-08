@@ -9,27 +9,30 @@ const processBatch = async () => {
     const fetchResult = await sql`
         SELECT
             entity->'route_id' as route_id,
-            avg_arr_delay,
-            avg_dep_delay,
-            start_date,
-            trip_id,
+            avg_delay,
+            max_delay,
             stop_id,
-            stop_sequence
+            stop_sequence,
+            trip_id
         FROM "trips"
         INNER JOIN (
             SELECT
-                start_date,
-                trip_id,
                 stop_id,
                 stop_sequence,
-                (avg(arrival_delay_seconds) / 60)::NUMERIC(10,2) as avg_arr_delay,
-                (avg(departure_delay_seconds) / 60)::NUMERIC(10,2) as avg_dep_delay
+                trip_id,
+                (avg(arrival_delay_seconds) / 60)::NUMERIC(10,2) as avg_delay,
+                max(arrival_delay_seconds) as max_delay
             FROM agg_trip_stop_delays
-            GROUP BY start_date, trip_id, stop_id, stop_sequence
+            GROUP BY stop_id, stop_sequence, trip_id
         ) as averages
         ON averages.trip_id = entity->>'trip_id'
     `;
     fs.writeFileSync('temp_json/delays.json', JSON.stringify(fetchResult, null, 2));
+
+    // TODO export monthly/daily averages
+    // TODO export all delays? look at size first
+    // Average max delay per day
+
     return fetchResult;
 }
 

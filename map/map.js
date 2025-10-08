@@ -2,7 +2,7 @@ var map = L.map('map').setView([-28, 153.38], 13);
 
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    opacity: 0.3,
+    opacity: 0,
 }).addTo(map);
 
 const randomColor = () => {
@@ -41,7 +41,7 @@ const addGeoJson = async () => {
         },
         style: function (feature) {
             return {
-                color: feature.properties?.route_color || '#000',//feature.properties?.routes?.[0]?.route_color,
+                color: feature.properties?.route_color || '#fff',//feature.properties?.routes?.[0]?.route_color,
                 weight: feature.properties?.stop_id ? 2 : 2,
                 opacity: 1,
             };
@@ -72,17 +72,17 @@ const colorStops = async () => {
         const delayEntry = delays.find(d => d.stop_id === stopId);
         if (delayEntry) {
             // Color based on average arrival delay
-            const avgDelay = parseFloat(delayEntry.avg_arr_delay);
+            const maxDelay = parseFloat(delayEntry.max_delay) || 0;
             const max = 30; // 30 minutes
             let color = '#00ff00';
-            if (avgDelay > 0) {
-                const ratio = Math.min(avgDelay / max, 1);
+            if (maxDelay > 0) {
+                const ratio = Math.min(maxDelay / max, 1);
                 const red = Math.floor(255 * ratio);
                 const green = Math.floor(255 * (1 - ratio));
                 color = `rgb(${red},${green},0)`;
             }
             marker.setStyle({ color });
-            marker.bindPopup(`Stop ID: ${stopId}<br>Avg Arrival Delay: ${avgDelay} mins<br>Route ID: ${delayEntry.route_id}`);
+            marker.bindPopup(`Stop ID: ${stopId}<br>Avg Arrival Delay: ${maxDelay} mins<br>Route ID: ${delayEntry.route_id}`);
         }
     });
 }
