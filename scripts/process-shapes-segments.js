@@ -64,7 +64,8 @@ const processTrip = async (tripId) => {
       row.stop_times_entity.stop_id,
       row.trips_entity.shape_id
     );
-    await markAsProcessed(row.id);
+
+    lastStop = row;
   }
   return fetchResult;
 };

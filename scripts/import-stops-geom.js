@@ -29,8 +29,8 @@ const importShapes = async () => {
           ${record.stop_name},
           ST_SetSRID(
             ST_MakePoint(
-              ${parseFloat(record.shape_pt_lon)},
-              ${parseFloat(record.shape_pt_lat)}
+              ${parseFloat(record.stop_lon)},
+              ${parseFloat(record.stop_lat)}
             ),
             4326
           )
