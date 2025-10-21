@@ -31,10 +31,16 @@ const processSegment = async (routeId, stopId1, stopId2, shapeId) => {
     JOIN stop_fracs b ON st.shape_id = b.shape_id AND b.stop_id = ${stopId2};
   `;
 
-  await sql`
-      INSERT INTO trip_segments_geom (fetch_id, route_id, from_stop_id, to_stop_id, geom)
-      VALUES (1, ${routeId}, ${stopId1}, ${stopId2}, ${segment[0].seg})
-  `;
+  try {
+    await sql`
+        INSERT INTO trip_segments_geom (fetch_id, route_id, from_stop_id, to_stop_id, geom)
+        VALUES (1, ${routeId}, ${stopId1}, ${stopId2}, ${segment[0].seg})
+    `;
+  } catch (e) {
+    console.error(
+      `Error inserting segment for ${routeId} from ${stopId1} to ${stopId2}: ${e.message}`
+    );
+  }
 };
 
 const processTrip = async (tripId) => {
