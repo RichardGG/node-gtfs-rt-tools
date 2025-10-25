@@ -80,24 +80,41 @@ const processTrip = async (tripId, shapeId, additionalProperties) => {
   return feature;
 };
 
-const processBatch = async (offset = 0) => {
+const uniqueShapes = [];
+
+const processBatch = async (limit, offset = 0) => {
   const fetchResult = await sql`
-    SELECT * FROM trips
-    ORDER BY id
-    LIMIT 10
+    SELECT trips.trip_id, string_agg(stop_times.stop_id, ', ' ORDER BY stop_times.stop_id) as stop_seq, (jsonb_agg(trips.entity))[1] as entity FROM trips
+    INNER JOIN stop_times ON trips.trip_id = stop_times.trip_id
+    GROUP BY trips.trip_id
+    LIMIT ${limit}
     OFFSET ${offset}
   `;
 
   console.log(`Processing ${fetchResult.length} trips`);
 
+  if (!fetchResult || fetchResult.length === 0) {
+    return false;
+  }
+
   const features = [];
   for (const row of fetchResult) {
+    // TODO only trips with unique (shape + stop sequence)
+    const key = `${row.entity.shape_id}-${row.stop_seq}`;
+    if (uniqueShapes.includes(key)) {
+      console.log(
+        `Skipping trip ${row.entity.trip_id} with duplicate shape/stop sequence`
+      );
+      continue;
+    }
+    uniqueShapes.push(key);
     features.push(
       await processTrip(row.entity.trip_id, row.entity.shape_id, {
         route_id: row.entity.route_id,
         service_id: row.entity.service_id,
         direction_id: row.entity.direction_id,
         trip_headsign: row.entity.trip_headsign,
+        key: key,
       })
     );
   }
@@ -105,14 +122,17 @@ const processBatch = async (offset = 0) => {
 };
 
 const processAll = async () => {
-  let count = 1;
   let offset = 0;
+  let done = false;
   const allFeatures = [];
-  while (count > 0 && offset < 100) {
-    const results = await processBatch(offset);
-    count = results.length;
-    offset += count;
-    console.log(`Processed ${count} trips`);
+  while (!done) {
+    const results = await processBatch(10, offset);
+    if (!results) {
+      done = true;
+      break;
+    }
+    offset += 10;
+    console.log(`Processed ${results.length} trips`);
     allFeatures.push(...results);
   }
   fs.writeFileSync(
