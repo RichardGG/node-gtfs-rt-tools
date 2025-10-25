@@ -121,7 +121,43 @@ const addSegments = async () => {
   }).addTo(map);
 };
 
-addSegments();
+const addTripsSplit = async () => {
+  const response = await fetch("/temp_geojson/trips-split-by-stop.geojson");
+  const geojson = await response.json();
+  console.log(geojson);
+  return L.geoJSON(geojson, {
+    pointToLayer: function (feature, latlng) {
+      return L.circleMarker(latlng, {
+        radius: 3,
+        fillOpacity: 1,
+        fillColor: "#fff",
+      });
+    },
+    style: function (feature) {
+      return {
+        color: feature.properties?.route_color || "#fff", //feature.properties?.routes?.[0]?.route_color,
+        weight: feature.properties?.stop_id ? 2 : 2,
+        opacity: 1,
+      };
+    },
+    onEachFeature: function (feature, layer) {
+      if (feature.properties && feature.properties.route_id) {
+        layer.bindPopup(
+          `Route ID: ${feature.properties.route_id}<br>Route Name: ${feature.properties.route_short_name} - ${feature.properties.route_long_name}`
+        );
+      }
+      if (feature.properties && feature.properties.stop_id) {
+        layer.bindPopup(
+          `Stop ID: ${feature.properties.stop_id}<br>Stop Name: ${feature.properties.stop_name}`
+        );
+      }
+    },
+  }).addTo(map);
+};
+
+addTripsSplit();
+
+// addSegments();
 
 // addCustomStops();
 // await addGeoJson();

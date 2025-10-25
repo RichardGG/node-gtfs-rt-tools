@@ -20,10 +20,13 @@ export async function up(sql) {
   await sql`CREATE INDEX idx_stop_times_stop_sequence ON stop_times(stop_sequence);`;
   await sql`CREATE INDEX idx_stop_times_trip_id ON stop_times(trip_id);`;
   await sql`CREATE INDEX idx_stop_times_stop_id ON stop_times(stop_id);`;
+  await sql`CREATE INDEX idx_stop_times_trip_id_stop_sequence ON stop_times(trip_id, stop_sequence);`;
   await sql`UPDATE stop_times SET trip_id = entity->>'trip_id', stop_id = entity->>'stop_id', stop_sequence = (entity->>'stop_sequence')::integer;`;
 
-  await sql`CREATE INDEX idx_trip_segments_geom_route_id_from_stop_id ON trip_segments_geom(route_id, from_stop_id);`;
-  await sql`CREATE INDEX idx_trip_segments_geom_route_id_to_stop_id ON trip_segments_geom(route_id, to_stop_id);`;
+  await sql`CREATE INDEX idx_trip_segments_geom_route_id_from_stop_id_to_stop_id ON trip_segments_geom(route_id, from_stop_id, to_stop_id);`;
+  await sql`CREATE INDEX idx_trip_segments_geom_route_id ON trip_segments_geom(route_id);`;
+  await sql`CREATE INDEX idx_trip_segments_geom_from_stop_id ON trip_segments_geom(from_stop_id);`;
+  await sql`CREATE INDEX idx_trip_segments_geom_to_stop_id ON trip_segments_geom(to_stop_id);`;
 }
 
 export async function down(sql) {
@@ -33,4 +36,6 @@ export async function down(sql) {
   await sql`ALTER TABLE stop_times DROP COLUMN trip_id;`;
   await sql`ALTER TABLE stop_times DROP COLUMN stop_id;`;
   await sql`ALTER TABLE stop_times DROP COLUMN stop_sequence;`;
+
+  // TODO remove indexes from trip_segments_geom
 }
