@@ -90,6 +90,8 @@ const processBatch = async (limit, offset = 0) => {
     LIMIT ${limit}
     OFFSET ${offset}
   `;
+  // TODO this gets slow with large offsets, new logging table to identify the fetches instead
+  // 25k remaining, 10 in about 10s. Estimate 7 hours for all at this rate... Probably around 18h total
 
   console.log(`Processing ${fetchResult.length} trips`);
 
@@ -99,7 +101,7 @@ const processBatch = async (limit, offset = 0) => {
 
   const features = [];
   for (const row of fetchResult) {
-    // TODO only trips with unique (shape + stop sequence)
+    // Only trips with unique (shape + stop sequence)
     const key = `${row.entity.shape_id}-${row.stop_seq}`;
     if (uniqueShapes.includes(key)) {
       console.log(
@@ -137,7 +139,7 @@ const processAll = async () => {
   }
   fs.writeFileSync(
     "temp_geojson/trips-split-by-stop.geojson",
-    JSON.stringify(allFeatures, null, 2)
+    JSON.stringify(allFeatures)
   );
 };
 
