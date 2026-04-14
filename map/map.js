@@ -155,12 +155,12 @@ const addTripsSplit = async () => {
   }).addTo(map);
 };
 
-addTripsSplit();
+// addTripsSplit();
 
 // addSegments();
 
 // addCustomStops();
-// await addGeoJson();
+await addGeoJson();
 colorStops();
 
 function updateColors(day) {
